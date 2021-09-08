@@ -132,7 +132,8 @@ def GMLAN_InitDiagnostics(
         p = GMLAN() / GMLAN_PM(subfunction="enableProgrammingMode")
         if verbose:
             print("Sending %s" % repr(p))
-        sock.sr1(p, timeout=0.001, verbose=False)
+        sock.send(p)
+        time.sleep(0.05)
         return True
     return False
 

@@ -269,7 +269,6 @@ class ISOTPNativeSocket(SuperSocket):
                  listen_only=False,  # type: bool
                  padding=False,  # type: bool
                  transmit_time=100,  # type: int
-                 stmin=0,  # type: int
                  basecls=ISOTP  # type: Type[Packet]
                  ):
         # type: (...) -> None
@@ -305,8 +304,7 @@ class ISOTPNativeSocket(SuperSocket):
 
         self.can_socket.setsockopt(SOL_CAN_ISOTP,
                                    CAN_ISOTP_RECV_FC,
-                                   self.__build_can_isotp_fc_options(
-                                       stmin=stmin))
+                                   self.__build_can_isotp_fc_options())
         self.can_socket.setsockopt(SOL_CAN_ISOTP,
                                    CAN_ISOTP_LL_OPTS,
                                    self.__build_can_isotp_ll_options())
@@ -337,16 +335,10 @@ class ISOTPNativeSocket(SuperSocket):
         except socket.timeout:
             warning('Captured no data, socket read timed out.')
             return None, None, None
-        except OSError as e:
+        except OSError:
             # something bad happened (e.g. the interface went down)
-            warning("Captured no data. %s" % e)
-            if e.errno == 84:
-                warning("Maybe a consecutive frame was missed. "
-                        "Increasing `stmin` could solve this problem.")
-            elif e.errno == 110:
-                warning('Captured no data, socket read timed out.')
-            else:
-                self.close()
+            warning("Captured no data.")
+            self.close()
             return None, None, None
 
         if ts is None:
